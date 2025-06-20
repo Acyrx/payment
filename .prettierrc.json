@@ -1,0 +1,10 @@
+{
+  "singleAttributePerLine": true,
+  "trailingComma": "all",
+  "tailwindFunctions": ["cn"],
+  "plugins": [
+    "prettier-plugin-tailwindcss",
+    "prettier-plugin-classnames",
+    "prettier-plugin-merge"
+  ]
+}

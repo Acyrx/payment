@@ -1,0 +1,25 @@
+{
+    "permissions": {
+      "allow": [
+        "Bash(bun run lint:*)",
+        "Bash(bun run:*)",
+        "Bash(bunx tsc:*)",
+        "Bash(rm:*)",
+        "Bash(curl:*)",
+        "Bash(kill:*)",
+        "Bash(ls:*)",
+        "Bash(mkdir:*)",
+        "Bash(bun tsc:*)",
+        "Bash(rg:*)",
+        "Bash(tsc --noEmit --skipLibCheck)",
+        "Bash(grep:*)",
+        "Bash(git checkout:*)",
+        "Bash(cp:*)",
+        "mcp__ide__getDiagnostics",
+        "Bash(find:*)",
+        "Bash(bun list:*)",
+        "Bash(bun dev)"
+      ],
+      "deny": []
+    }
+  }
