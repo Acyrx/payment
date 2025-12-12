@@ -5,9 +5,15 @@ import { getProfile } from "@/lib/actions/profile";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 
-export default function User() {
-  const [user, setUser] = useState<any>(null);
+type UserProfile = {
+  id: string;
+  email: string;
+  avatar_url?: string;
+  plan?: string;
+};
 
+export default function User() {
+  const [user, setUser] = useState<UserProfile | null>(null);
   useEffect(() => {
     async function loadProfile() {
       const profile = await getProfile();

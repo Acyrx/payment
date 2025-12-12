@@ -1,12 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import {
-  checkSignupLimit,
-  checkSigninLimit,
-  checkPasswordResetLimit,
-  checkRateLimit,
-} from "@/lib/rate-limiter";
+import { checkSigninLimit, checkRateLimit } from "@/lib/rate-limiter";
 import { trackSession } from "@/app/auth/actions/sessions";
 import { headers } from "next/headers";
 

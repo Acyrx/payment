@@ -8,7 +8,6 @@ import {
   listProducts,
   listVariants,
 } from "@lemonsqueezy/lemonsqueezy.js";
-import { createClient } from "@/lib/supabase/server";
 
 export async function configureLemonSqueezy() {
   const requiredVars = [

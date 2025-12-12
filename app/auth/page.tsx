@@ -1,6 +1,4 @@
 "use client";
-
-import { useEffect, useState } from "react";
 import { LoginForm } from "@/components/login-form";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";

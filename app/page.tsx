@@ -189,7 +189,7 @@ export default function PricingPage() {
           <div className="space-y-12 text-center">
             <div className="space-y-4">
               <h2 className="text-foreground text-3xl font-bold md:text-4xl">
-                What's Included in Every Plan
+                What&apos;s Included in Every Plan
               </h2>
               <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
                 All plans come with these essential features to enhance your
@@ -243,7 +243,8 @@ export default function PricingPage() {
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
                   Track progress with intelligent insights that adapt to each
-                  learner's pace, style, and individual learning preferences.
+                  learner&apos;s pace, style, and individual learning
+                  preferences.
                 </p>
               </div>
             </div>
