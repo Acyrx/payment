@@ -7,6 +7,8 @@ import { signOut } from "@/lib/supabase/auth";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import User from "./user";
+import { motion } from "framer-motion";
 
 export function Header() {
   const isAuthenticated = useIsAuthenticated();
@@ -19,30 +21,47 @@ export function Header() {
   };
 
   return (
-    <header className="bg-background border-b">
-      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+    <motion.header
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="bg-background/60 sticky top-0 z-50 border-b backdrop-blur-md"
+    >
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
+        {/* Logo */}
         <Link
-          className="text-lg font-semibold"
-          href="/"
+          className="text-xl font-semibold tracking-tight transition hover:opacity-80"
+          href="https://app.acyrx.com"
         >
-          Home
+          Acyrx Payment
         </Link>
-        <div className="flex flex-row gap-2">
+
+        {/* Right Section */}
+        <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <Button
               onClick={handleSignOut}
               variant="outline"
+              className="rounded-xl"
             >
               Sign Out
             </Button>
           ) : (
-            <Button asChild>
+            <Button
+              asChild
+              className="rounded-xl"
+            >
               <Link href="/auth">Sign In</Link>
             </Button>
           )}
+
+          <div className="ml-1">
+            <User />
+          </div>
+
           <ThemeToggle />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 }

@@ -60,13 +60,19 @@ export async function hasSubscriptionEnded(
     .from("subscriptions")
     .select("ends_at")
     .eq("customer_id", customerId)
-    .single();
+    .maybeSingle(); // safer than .single()
 
   if (error) {
-    console.error(error);
-    return true;
+    console.error("Supabase error in hasSubscriptionEnded:", error);
+    return true; // assume ended if DB error
   }
 
+  // No subscription row found
+  if (!data) {
+    return true; // treat as ended
+  }
+
+  // Subscription has no end date => still active
   if (data.ends_at === null) {
     return false;
   }
@@ -82,14 +88,20 @@ export async function getSubscriptionId(
   customerId: string,
 ) {
   console.log(customerId);
+
   const { data, error } = await supabase
     .from("subscriptions")
     .select("subscription_id")
     .eq("customer_id", customerId)
-    .single();
+    .maybeSingle(); // safer than .single()
 
   if (error) {
-    console.error(error);
+    console.error("Supabase error in getSubscriptionId:", error);
+    return null;
+  }
+
+  // No subscription row found
+  if (!data) {
     return null;
   }
 

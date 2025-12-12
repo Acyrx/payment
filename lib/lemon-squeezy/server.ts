@@ -8,6 +8,7 @@ import {
   listProducts,
   listVariants,
 } from "@lemonsqueezy/lemonsqueezy.js";
+import { createClient } from "@/lib/supabase/server";
 
 export async function configureLemonSqueezy() {
   const requiredVars = [
@@ -137,11 +138,32 @@ export async function createCustomerPortal(subscriptionId: string) {
     return null;
   }
 
-  const { data } = await getSubscription(subscriptionId);
-  if (!data?.data?.attributes?.urls?.customer_portal_update_subscription) {
+  // Validate subscriptionId before calling Lemon Squeezy
+  if (!subscriptionId || typeof subscriptionId !== "string") {
+    console.error(
+      "createCustomerPortal: Invalid or missing subscriptionId:",
+      subscriptionId,
+    );
     return null;
   }
-  return data?.data?.attributes.urls.customer_portal_update_subscription;
+
+  let response;
+  try {
+    response = await getSubscription(subscriptionId);
+  } catch (err) {
+    console.error("Failed to fetch subscription from Lemon Squeezy:", err);
+    return null;
+  }
+
+  const portalUrl =
+    response?.data?.data?.attributes?.urls?.customer_portal_update_subscription;
+
+  if (!portalUrl) {
+    console.error("createCustomerPortal: No customer portal URL found");
+    return null;
+  }
+
+  return portalUrl;
 }
 
 export async function getProductVariant(variantId: number | string) {

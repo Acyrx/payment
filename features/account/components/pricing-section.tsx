@@ -16,31 +16,36 @@ interface PricingSectionProps {
 export function PricingSection({ products }: PricingSectionProps) {
   if (products.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">No subscription plans available at the moment.</p>
+      <div className="py-12 text-center">
+        <p className="text-muted-foreground">
+          No subscription plans available at the moment.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold mb-4">Choose Your Plan</h2>
-        <p className="text-lg text-muted-foreground">
+    <div className="mx-auto w-full max-w-6xl px-4">
+      <div className="mb-12 text-center">
+        <h2 className="mb-4 text-4xl font-bold">Choose Your Plan</h2>
+        <p className="text-muted-foreground text-lg">
           Select the subscription that best fits your needs
         </p>
       </div>
       <div
         className={`grid gap-6 ${
           products.length === 1
-            ? "max-w-md mx-auto"
+            ? "mx-auto max-w-md"
             : products.length === 2
-            ? "md:grid-cols-2 max-w-4xl mx-auto"
-            : "md:grid-cols-2 lg:grid-cols-3"
-        }`}
+              ? "mx-auto max-w-4xl md:grid-cols-2"
+              : "md:grid-cols-2 lg:grid-cols-3"
+          }`}
       >
         {products.map((product, index) => (
-          <PricingCard key={product.variant_id || index} product={product} />
+          <PricingCard
+            key={product.variant_id || index}
+            product={product}
+          />
         ))}
       </div>
     </div>
