@@ -62,8 +62,6 @@ export const POST = Webhooks({
           subscription_status: payload.data.status || "active",
           product_id: payload.data?.productId,
           price_id: payload.data.prices?.[0]?.id || null,
-          subscription_end: payload.data.endedAt,
-          current_period_start: payload.data.currentPeriodStart,
           customer_id: customer.customer_id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
