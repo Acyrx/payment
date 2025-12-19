@@ -83,6 +83,8 @@ export default function Dashboard() {
     }
   };
 
+  console.log(subscriptions);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
@@ -201,22 +203,27 @@ export default function Dashboard() {
           <div className="grid gap-6">
             <h2 className="text-2xl font-semibold">Your Subscriptions</h2>
             {subscriptions.map((subscription) => (
-              <Card key={subscription.id} className="overflow-hidden">
-                <CardHeader className="bg-muted/50">
+              <Card
+                key={subscription.subscription_id}
+                className="overflow-hidden"
+              >
+                <CardHeader className="bg-muted/50 pt-2">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="flex items-center gap-3">
                         <CreditCard className="w-5 h-5 text-primary" />
-                        {subscription.products?.name || "Subscription"}
+                        {subscription.product?.name || "Subscription"}
                       </CardTitle>
                       <CardDescription className="mt-2">
-                        {subscription.products?.description ||
+                        {subscription.product?.description ||
                           "Active subscription"}
                       </CardDescription>
                     </div>
                     <Badge className={getStatusColor(subscription.status)}>
-                      {subscription.status.charAt(0).toUpperCase() +
-                        subscription.status.slice(1)}
+                      {subscription.subscription_status
+                        .charAt(0)
+                        .toUpperCase() +
+                        subscription.subscription_status.slice(1)}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -230,15 +237,17 @@ export default function Dashboard() {
                           {new Intl.NumberFormat("en-US", {
                             style: "currency",
                             currency:
-                              subscription.products?.price_currency || "USD",
+                              subscription.product?.prices[0].priceCurrency ||
+                              "USD",
                           }).format(
-                            (subscription.products?.price_amount || 0) / 100
+                            (subscription.product?.prices[0].priceAmount || 0) /
+                              100
                           )}{" "}
-                          / month
+                          /{subscription.product?.prices[0].recurringInterval}
                         </p>
                       </div>
                     </div>
-                    {subscription.current_period_end && (
+                    {subscription.subscription_end && (
                       <div className="flex items-start gap-3">
                         <CalendarDays className="w-4 h-4 text-muted-foreground mt-0.5" />
                         <div>
@@ -247,7 +256,7 @@ export default function Dashboard() {
                           </p>
                           <p className="text-sm text-muted-foreground">
                             {new Date(
-                              subscription.current_period_end
+                              subscription.subscription_end
                             ).toLocaleDateString("en-US", {
                               year: "numeric",
                               month: "long",
