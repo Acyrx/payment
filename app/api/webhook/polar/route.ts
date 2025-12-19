@@ -2,8 +2,10 @@ import { Webhooks } from "@polar-sh/nextjs";
 import { createClient } from "@/lib/supabase/server";
 
 const TOKEN_AMOUNTS: Record<string, number> = {
-  [process.env.POLAR_BASIC_PRODUCT_ID!]: 500000,
-  [process.env.POLAR_PRO_PRODUCT_ID!]: 1000000,
+  [process.env.POLAR_STANDARD_PRODUCT_ID_MONTHLY!]: 500000,
+  [process.env.POLAR_PREMIUM_PRODUCT_ID_MONTHLY!]: 1000000,
+  [process.env.POLAR_STANDARD_PRODUCT_ID_YEAR!]: 500000,
+  [process.env.POLAR_PREMIUM_PRODUCT_ID_YEAR!]: 1000000,
   default: 500,
 };
 
@@ -22,6 +24,7 @@ export const POST = Webhooks({
     try {
       const supabase = await createClient();
       const month = getMonthKey();
+
       const tokenLimit =
         TOKEN_AMOUNTS[payload.data.productId] || TOKEN_AMOUNTS.default;
 
