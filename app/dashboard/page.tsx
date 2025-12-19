@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CalendarDays, CreditCard, Mail } from "lucide-react";
+import { CalendarDays, CreditCard, DollarSign, Mail } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase/client";
@@ -37,6 +37,19 @@ export default function Dashboard() {
     };
     getUser();
   }, []);
+
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "active":
+        return "success";
+      case "canceled":
+        return "warning";
+      case "revoked":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
 
   const fetchSubscriptionsForEmail = async (userEmail: string) => {
     setIsLoading(true);
@@ -82,8 +95,6 @@ export default function Dashboard() {
         return "bg-slate-100 text-slate-800 dark:bg-slate-900/20 dark:text-slate-400";
     }
   };
-
-  console.log(subscriptions);
 
   if (isLoading) {
     return (
@@ -186,13 +197,15 @@ export default function Dashboard() {
               >
                 {isLoading ? "Loading..." : "Refresh Subscriptions"}
               </Button>
-              <Button
-                variant="outline"
-                onClick={handleCustomerPortal}
-                disabled={isLoading}
-              >
-                Customer Portal
-              </Button>
+              {subscriptions.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={handleCustomerPortal}
+                  disabled={isLoading}
+                >
+                  Customer Portal
+                </Button>
+              )}
             </div>
             {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
           </CardContent>
@@ -200,76 +213,104 @@ export default function Dashboard() {
 
         {/* Subscriptions List */}
         {subscriptions.length > 0 ? (
-          <div className="grid gap-6">
-            <h2 className="text-2xl font-semibold">Your Subscriptions</h2>
-            {subscriptions.map((subscription) => (
-              <Card
-                key={subscription.subscription_id}
-                className="overflow-hidden"
-              >
-                <CardHeader className="bg-muted/50 pt-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center gap-3">
-                        <CreditCard className="w-5 h-5 text-primary" />
-                        {subscription.product?.name || "Subscription"}
-                      </CardTitle>
-                      <CardDescription className="mt-2">
-                        {subscription.product?.description ||
-                          "Active subscription"}
-                      </CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(subscription.status)}>
-                      {subscription.subscription_status
-                        .charAt(0)
-                        .toUpperCase() +
-                        subscription.subscription_status.slice(1)}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3">
-                      <Mail className="w-4 h-4 text-muted-foreground mt-0.5" />
-                      <div>
-                        <p className="text-sm font-medium">Price</p>
-                        <p className="text-sm text-muted-foreground">
-                          {new Intl.NumberFormat("en-US", {
-                            style: "currency",
-                            currency:
-                              subscription.product?.prices[0].priceCurrency ||
-                              "USD",
-                          }).format(
-                            (subscription.product?.prices[0].priceAmount || 0) /
-                              100
-                          )}{" "}
-                          /{subscription.product?.prices[0].recurringInterval}
-                        </p>
+          <div className="space-y-6">
+            <h2
+              className="text-2xl font-semibold animate-slide-up"
+              style={{ animationDelay: "0.2s" }}
+            >
+              Your Subscriptions
+            </h2>
+            <div className="grid gap-5">
+              {subscriptions.map((subscription, index) => (
+                <Card
+                  key={subscription.subscription_id}
+                  className="overflow-hidden border-border/50 shadow-md hover:shadow-lg transition-shadow duration-300 animate-slide-up"
+                  style={{ animationDelay: `${0.3 + index * 0.1}s` }}
+                >
+                  <CardHeader className="bg-secondary/30 border-b border-border/50 pb-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center gap-3 text-xl">
+                          <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                            <CreditCard className="w-5 h-5 text-primary-foreground" />
+                          </div>
+                          {subscription.product?.name || "Subscription"}
+                        </CardTitle>
+                        <CardDescription className="mt-2 ml-[52px]">
+                          {subscription.product?.description ||
+                            "Active subscription"}
+                        </CardDescription>
                       </div>
+                      <Badge
+                        variant={
+                          getStatusVariant(
+                            subscription.subscription_status
+                          ) as any
+                        }
+                      >
+                        {subscription.subscription_status
+                          .charAt(0)
+                          .toUpperCase() +
+                          subscription.subscription_status.slice(1)}
+                      </Badge>
                     </div>
-                    {subscription.subscription_end && (
-                      <div className="flex items-start gap-3">
-                        <CalendarDays className="w-4 h-4 text-muted-foreground mt-0.5" />
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                          <DollarSign className="w-5 h-5 text-muted-foreground" />
+                        </div>
                         <div>
-                          <p className="text-sm font-medium">
-                            Next Billing Date
+                          <p className="text-sm font-medium text-muted-foreground">
+                            Price
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(
-                              subscription.subscription_end
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
+                          <p className="text-lg font-semibold">
+                            {new Intl.NumberFormat("en-US", {
+                              style: "currency",
+                              currency:
+                                subscription.product?.prices[0].priceCurrency ||
+                                "USD",
+                            }).format(
+                              (subscription.product?.prices[0].priceAmount ||
+                                0) / 100
+                            )}
+                            <span className="text-sm font-normal text-muted-foreground">
+                              /
+                              {
+                                subscription.product?.prices[0]
+                                  .recurringInterval
+                              }
+                            </span>
                           </p>
                         </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                      {subscription.created_at && (
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
+                            <CalendarDays className="w-5 h-5 text-muted-foreground" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground">
+                              Next Billing Date
+                            </p>
+                            <p className="text-lg font-semibold">
+                              {new Date(
+                                subscription.created_at
+                              ).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         ) : (
           <Card>

@@ -65,12 +65,20 @@ export const POST = Webhooks({
           customer_id: customer.customer_id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          end_date: payload.data.endsAt,
         },
         { onConflict: "subscription_id" }
       );
 
-      // 3. Upsert token usage only if you have a user_id (optional)
-      // Skipped since no auth_id
+      await supabase.from("token_usage").upsert(
+        {
+          email,
+          month,
+          token_limit: tokenLimit,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "email,month" }
+      );
     } catch (err) {
       console.error("Subscription active error:", err);
     }
@@ -79,6 +87,9 @@ export const POST = Webhooks({
   onSubscriptionRevoked: async (payload) => {
     try {
       const supabase = await createClient();
+      const email = payload.data.customer?.email;
+      const month = getMonthKey();
+
       await supabase
         .from("subscriptions")
         .update({
@@ -86,6 +97,15 @@ export const POST = Webhooks({
           updated_at: new Date().toISOString(),
         })
         .eq("subscription_id", payload.data.id);
+
+      await supabase
+        .from("token_usage")
+        .update({
+          token_limit: TOKEN_AMOUNTS.default,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("month", month)
+        .eq("email", email);
     } catch (err) {
       console.error("Subscription revoked error:", err);
     }
@@ -94,6 +114,8 @@ export const POST = Webhooks({
   onSubscriptionCanceled: async (payload) => {
     try {
       const supabase = await createClient();
+      const email = payload.data.customer?.email;
+      const month = getMonthKey();
       await supabase
         .from("subscriptions")
         .update({
@@ -101,6 +123,15 @@ export const POST = Webhooks({
           updated_at: new Date().toISOString(),
         })
         .eq("subscription_id", payload.data.id);
+
+      await supabase
+        .from("token_usage")
+        .update({
+          token_limit: TOKEN_AMOUNTS.default,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("month", month)
+        .eq("email", email);
     } catch (err) {
       console.error("Subscription canceled error:", err);
     }

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
+import { Footer } from "@/components/footer";
 
 export default async function Home() {
   const products = await polar.products.list({ isArchived: false });
@@ -100,29 +101,8 @@ export default async function Home() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-24 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <Badge
-            className="mb-6 px-4 py-1.5 bg-blue-100 dark:bg-blue-950 border-blue-200 dark:border-blue-800"
-            variant="secondary"
-          >
-            <Sparkles className="w-3 h-3 mr-1.5 inline" />
-            AI-Powered Development Environment
-          </Badge>
-          <h1 className="text-6xl font-bold tracking-tight mb-6 text-balance bg-gradient-to-br from-slate-900 to-slate-700 dark:from-white dark:to-slate-300 bg-clip-text text-transparent">
-            Code Smarter with AI
-          </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto text-pretty leading-relaxed">
-            Experience the future of coding with our VS Code-inspired editor
-            powered by AI. Get instant help, learn faster, and build better
-            applications.
-          </p>
-        </div>
-      </section>
-
       {/* Features Grid */}
-      <section className="pb-20 px-6">
+      <section className="pb-20 px-6 pt-12">
         <div className="max-w-7xl mx-auto">
           {/* Pricing Section */}
           <div className="text-center mb-12">
@@ -610,13 +590,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t py-12 px-6 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
-          <p>Acyrx Payment</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
