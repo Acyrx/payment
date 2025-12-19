@@ -1,5 +1,6 @@
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient, getUser } from "@/lib/supabase/server"; // <-- use your helper
+import { getUser } from "@/lib/supabase/server"; // <-- use your helper
+import { createClient } from "@/lib/supabase/admin"; // <-- use your helper
 
 const TOKEN_AMOUNTS: Record<string, number> = {
   [process.env.POLAR_STANDARD_PRODUCT_ID_MONTHLY!]: 500000,
