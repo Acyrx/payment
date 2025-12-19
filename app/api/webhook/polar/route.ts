@@ -25,7 +25,7 @@ export const POST = Webhooks({
       const supabase = await createClient();
       const month = getMonthKey();
       const tokenLimit =
-        TOKEN_AMOUNTS[payload.data?.product_id] || TOKEN_AMOUNTS.default;
+        TOKEN_AMOUNTS[payload.data?.productId] || TOKEN_AMOUNTS.default;
 
       const email = payload.data.customer?.email;
 
@@ -40,15 +40,15 @@ export const POST = Webhooks({
       let { data: customer } = await supabase
         .from("customers")
         .select("customer_id, email, auth_id")
-        .eq("customer_id", payload.data?.customer_id)
+        .eq("customer_id", payload.data?.customerId)
         .single();
 
       if (!customer) {
         const { data: newCustomer, error: insertError } = await supabase
           .from("customers")
           .insert({
-            customer_id: payload.data?.customer_id,
-            email: email || `${payload.data.customer_id}@example.com`,
+            customer_id: payload.data?.customerId,
+            email: email || `${payload.data.customerId}@example.com`,
             auth_id: authId,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -89,7 +89,7 @@ export const POST = Webhooks({
         {
           subscription_id: payload.data.id,
           subscription_status: payload.data.status || "active",
-          product_id: payload.data?.product_id,
+          product_id: payload.data?.productId,
           price_id: payload.data.prices?.[0]?.id || null,
           customer_id: customer.customer_id,
           created_at: new Date().toISOString(),
