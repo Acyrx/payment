@@ -65,7 +65,7 @@ export default function Dashboard() {
       setError("Please log in to access customer portal");
       return;
     }
-    window.location.href = `/api/customer-portal?email=${encodeURIComponent(
+    window.location.href = `/api/customer_portal?email=${encodeURIComponent(
       email
     )}`;
   };
@@ -184,13 +184,13 @@ export default function Dashboard() {
               >
                 {isLoading ? "Loading..." : "Refresh Subscriptions"}
               </Button>
-              {/* <Button
+              <Button
                 variant="outline"
                 onClick={handleCustomerPortal}
                 disabled={isLoading}
               >
                 Customer Portal
-              </Button> */}
+              </Button>
             </div>
             {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
           </CardContent>

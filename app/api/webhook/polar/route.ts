@@ -1,5 +1,5 @@
 import { Webhooks } from "@polar-sh/nextjs";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server"; // <-- use your helper
 
 const TOKEN_AMOUNTS: Record<string, number> = {
   [process.env.POLAR_STANDARD_PRODUCT_ID_MONTHLY!]: 500000,
@@ -24,57 +24,79 @@ export const POST = Webhooks({
     try {
       const supabase = await createClient();
       const month = getMonthKey();
-
       const tokenLimit =
-        TOKEN_AMOUNTS[payload.data.productId] || TOKEN_AMOUNTS.default;
+        TOKEN_AMOUNTS[payload.data?.product_id] || TOKEN_AMOUNTS.default;
 
-      /** 1. Find customer */
-      const { data: customer } = await supabase
-        .from("customers")
-        .select("id, auth_id")
-        .eq("polar_customer_id", payload.data.customerId)
-        .single();
+      const email = payload.data.customer?.email;
 
-      if (!customer?.auth_id) {
-        throw new Error("Customer or auth_id not found");
+      // 1. Get Supabase auth user using your helper
+      let authId: string | null = null;
+      if (email) {
+        const user = await getUser();
+        authId = user?.id || null;
       }
 
-      /** 2. Upsert monthly token usage */
-      await supabase.from("token_usage").upsert(
-        {
-          user_id: customer.auth_id,
-          month,
-          token_limit: tokenLimit,
-          tokens_used: 0,
-          last_reset_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "user_id,month",
-        }
-      );
+      // 2. Upsert customer
+      let { data: customer } = await supabase
+        .from("customers")
+        .select("customer_id, email, auth_id")
+        .eq("customer_id", payload.data?.customer_id)
+        .single();
 
-      /** 3. Upsert subscription */
+      if (!customer) {
+        const { data: newCustomer, error: insertError } = await supabase
+          .from("customers")
+          .insert({
+            customer_id: payload.data?.customer_id,
+            email: email || `${payload.data.customer_id}@example.com`,
+            auth_id: authId,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select("customer_id, email, auth_id")
+          .single();
+
+        if (insertError) {
+          console.error("Failed to create customer:", insertError);
+          return;
+        }
+
+        customer = newCustomer;
+      } else if (authId && !customer.auth_id) {
+        await supabase
+          .from("customers")
+          .update({ auth_id: authId, updated_at: new Date().toISOString() })
+          .eq("customer_id", customer.customer_id);
+        customer.auth_id = authId;
+      }
+
+      // 3. Upsert token usage
+      if (customer.auth_id) {
+        await supabase.from("token_usage").upsert(
+          {
+            user_id: customer.auth_id,
+            month,
+            token_limit: tokenLimit,
+            tokens_used: 0,
+            last_reset_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,month" }
+        );
+      }
+
+      // 4. Upsert subscription
       await supabase.from("subscriptions").upsert(
         {
-          customer_id: customer.id,
-          polar_subscription_id: payload.data.id,
-          polar_product_id: payload.data.productId,
-          status: "active",
-          current_period_start: payload.data.currentPeriodStart,
-          current_period_end: payload.data.currentPeriodEnd,
+          subscription_id: payload.data.id,
+          subscription_status: payload.data.status || "active",
+          product_id: payload.data?.product_id,
+          price_id: payload.data.prices?.[0]?.id || null,
+          customer_id: customer.customer_id,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "polar_subscription_id" }
+        { onConflict: "subscription_id" }
       );
-
-      /** 4. Mark customer active */
-      await supabase
-        .from("customers")
-        .update({
-          subscription_status: "active",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", customer.id);
     } catch (err) {
       console.error("Subscription active error:", err);
     }
@@ -83,22 +105,13 @@ export const POST = Webhooks({
   onSubscriptionRevoked: async (payload) => {
     try {
       const supabase = await createClient();
-
       await supabase
         .from("subscriptions")
-        .update({
-          status: "revoked",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("polar_subscription_id", payload.data.id);
-
-      await supabase
-        .from("customers")
         .update({
           subscription_status: "revoked",
           updated_at: new Date().toISOString(),
         })
-        .eq("polar_customer_id", payload.data.customerId);
+        .eq("subscription_id", payload.data.id);
     } catch (err) {
       console.error("Subscription revoked error:", err);
     }
@@ -107,23 +120,13 @@ export const POST = Webhooks({
   onSubscriptionCanceled: async (payload) => {
     try {
       const supabase = await createClient();
-
       await supabase
         .from("subscriptions")
-        .update({
-          status: "canceled",
-          cancel_at_period_end: true,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("polar_subscription_id", payload.data.id);
-
-      await supabase
-        .from("customers")
         .update({
           subscription_status: "canceled",
           updated_at: new Date().toISOString(),
         })
-        .eq("polar_customer_id", payload.data.customerId);
+        .eq("subscription_id", payload.data.id);
     } catch (err) {
       console.error("Subscription canceled error:", err);
     }

@@ -1,7 +1,13 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, getUser } from "@/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
+  const user = await getUser();
+
+  if (!user?.id) {
+    throw new Error("You must be logged in to create a companion");
+  }
   try {
     const email = req.nextUrl.searchParams.get("email");
 
@@ -43,7 +49,7 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("[v0] Error fetching subscriptions:", error);
+      console.error("Error fetching subscriptions:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -52,7 +58,7 @@ export async function GET(req: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("[v0] Error in subscriptions route:", error);
+    console.error("Error in subscriptions route:", error);
     return NextResponse.json(
       { error: error.message || error.toString() },
       { status: 500 }
