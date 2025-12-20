@@ -28,11 +28,11 @@ export const POST = Webhooks({
         TOKEN_AMOUNTS[payload.data?.productId] || TOKEN_AMOUNTS.default;
       const email = payload.data.customer?.email;
 
-      // 1. Check if customer exists by customer_id
+      // 1. Check if customer exists by polar_customer_id
       let { data: customer } = await supabase
         .from("customers")
-        .select("customer_id, email")
-        .eq("customer_id", payload.data?.customerId)
+        .select("id, email")
+        .eq("polar_customer_id", payload.data?.customerId)
         .single();
 
       if (!customer) {
@@ -41,20 +41,20 @@ export const POST = Webhooks({
 
         const { data: existingCustomerByEmail } = await supabase
           .from("customers")
-          .select("customer_id, email")
+          .select("id, email")
           .eq("email", customerEmail)
           .single();
 
         if (existingCustomerByEmail) {
-          // Update existing customer with new customer_id
+          // Update existing customer with new polar_customer_id
           const { data: updatedCustomer, error: updateError } = await supabase
             .from("customers")
             .update({
-              customer_id: payload.data?.customerId,
+              polar_customer_id: payload.data?.customerId,
               updated_at: new Date().toISOString(),
             })
             .eq("email", customerEmail)
-            .select("customer_id, email")
+            .select("id, email")
             .single();
 
           if (updateError) {
@@ -68,12 +68,12 @@ export const POST = Webhooks({
           const { data: newCustomer, error: insertError } = await supabase
             .from("customers")
             .insert({
-              customer_id: payload.data?.customerId,
+              polar_customer_id: payload.data?.customerId,
               email: customerEmail,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
-            .select("customer_id, email")
+            .select("id, email")
             .single();
 
           if (insertError) {
@@ -92,7 +92,7 @@ export const POST = Webhooks({
           subscription_status: payload.data.status || "active",
           product_id: payload.data?.productId,
           price_id: payload.data.prices?.[0]?.id || null,
-          customer_id: customer.customer_id,
+          customer_id: customer.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
           end_date: payload.data.currentPeriodEnd,
