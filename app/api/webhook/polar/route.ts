@@ -70,14 +70,25 @@ export const POST = Webhooks({
         { onConflict: "subscription_id" }
       );
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("email", email)
+        .single();
+
+      if (profileError || !profile) {
+        console.error("No profile found for email:", email);
+        return;
+      }
+
       await supabase.from("token_usage").upsert(
         {
-          email,
+          user_id: profile.id,
           month,
           token_limit: tokenLimit,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "email,month" }
+        { onConflict: "profile_id,month" }
       );
     } catch (err) {
       console.error("Subscription active error:", err);
@@ -98,6 +109,17 @@ export const POST = Webhooks({
         })
         .eq("subscription_id", payload.data.id);
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("email", email)
+        .single();
+
+      if (profileError || !profile) {
+        console.error("No profile found for email:", email);
+        return;
+      }
+
       await supabase
         .from("token_usage")
         .update({
@@ -105,7 +127,7 @@ export const POST = Webhooks({
           updated_at: new Date().toISOString(),
         })
         .eq("month", month)
-        .eq("email", email);
+        .eq("user_id", profile.id);
     } catch (err) {
       console.error("Subscription revoked error:", err);
     }
@@ -124,6 +146,17 @@ export const POST = Webhooks({
         })
         .eq("subscription_id", payload.data.id);
 
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, email")
+        .eq("email", email)
+        .single();
+
+      if (profileError || !profile) {
+        console.error("No profile found for email:", email);
+        return;
+      }
+
       await supabase
         .from("token_usage")
         .update({
@@ -131,7 +164,7 @@ export const POST = Webhooks({
           updated_at: new Date().toISOString(),
         })
         .eq("month", month)
-        .eq("email", email);
+        .eq("user_id", profile.id);
     } catch (err) {
       console.error("Subscription canceled error:", err);
     }
