@@ -32,7 +32,7 @@ export const POST = Webhooks({
       let { data: customer } = await supabase
         .from("customers")
         .select("id, email")
-        .eq("polar_customer_id", payload.data?.customerId)
+        .eq("customer_id", payload.data?.customerId)
         .single();
 
       if (!customer) {
