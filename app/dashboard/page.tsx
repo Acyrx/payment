@@ -96,8 +96,6 @@ export default function Dashboard() {
     }
   };
 
-  console.log(subscriptions);
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 flex items-center justify-center">
@@ -287,7 +285,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                       </div>
-                      {subscription.created_at && (
+                      {subscription.end_at && (
                         <div className="flex items-start gap-4">
                           <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center">
                             <CalendarDays className="w-5 h-5 text-muted-foreground" />
@@ -297,13 +295,14 @@ export default function Dashboard() {
                               Next Billing Date
                             </p>
                             <p className="text-lg font-semibold">
-                              {new Date(
-                                subscription.created_at
-                              ).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
+                              {new Date(subscription.end_at).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
                             </p>
                           </div>
                         </div>

@@ -111,14 +111,28 @@ export const POST = Webhooks({
         return;
       }
 
+      // Get existing token usage for this user
+      const { data: existingTokenUsage } = await supabase
+        .from("token_usage")
+        .select("token_limit, tokens_used")
+        .eq("user_id", profile.id)
+        .single();
+
+      // Calculate new token limit (add to existing limit if upgrading)
+      let newTokenLimit = tokenLimit;
+      if (existingTokenUsage && existingTokenUsage.token_limit) {
+        // If user already has a limit set, add the new tokens to their existing allocation
+        // This handles cases where a user upgrades their plan
+        newTokenLimit = Math.max(tokenLimit, existingTokenUsage.token_limit);
+      }
+
       await supabase.from("token_usage").upsert(
         {
           user_id: profile.id,
-          month,
-          token_limit: tokenLimit,
+          token_limit: newTokenLimit,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "profile_id,month" }
+        { onConflict: "user_id" }
       );
     } catch (err) {
       console.error("Subscription active error:", err);
@@ -150,13 +164,29 @@ export const POST = Webhooks({
         return;
       }
 
+      // Get existing token usage for this user and month
+      const { data: existingTokenUsage } = await supabase
+        .from("token_usage")
+        .select("token_limit")
+        .eq("user_id", profile.id)
+        .single();
+
+      // Set token limit to default, but don't reduce below existing limit
+      // This prevents reducing tokens if user had a higher limit before
+      let newTokenLimit = TOKEN_AMOUNTS.default;
+      if (existingTokenUsage && existingTokenUsage.token_limit) {
+        newTokenLimit = Math.max(
+          TOKEN_AMOUNTS.default,
+          existingTokenUsage.token_limit
+        );
+      }
+
       await supabase
         .from("token_usage")
         .update({
-          token_limit: TOKEN_AMOUNTS.default,
+          token_limit: newTokenLimit,
           updated_at: new Date().toISOString(),
         })
-        .eq("month", month)
         .eq("user_id", profile.id);
     } catch (err) {
       console.error("Subscription revoked error:", err);
@@ -187,13 +217,29 @@ export const POST = Webhooks({
         return;
       }
 
+      // Get existing token usage for this user
+      const { data: existingTokenUsage } = await supabase
+        .from("token_usage")
+        .select("token_limit")
+        .eq("user_id", profile.id)
+        .single();
+
+      // Set token limit to default, but don't reduce below existing limit
+      // This prevents reducing tokens if user had a higher limit before
+      let newTokenLimit = TOKEN_AMOUNTS.default;
+      if (existingTokenUsage && existingTokenUsage.token_limit) {
+        newTokenLimit = Math.max(
+          TOKEN_AMOUNTS.default,
+          existingTokenUsage.token_limit
+        );
+      }
+
       await supabase
         .from("token_usage")
         .update({
-          token_limit: TOKEN_AMOUNTS.default,
+          token_limit: newTokenLimit,
           updated_at: new Date().toISOString(),
         })
-        .eq("month", month)
         .eq("user_id", profile.id);
     } catch (err) {
       console.error("Subscription canceled error:", err);
