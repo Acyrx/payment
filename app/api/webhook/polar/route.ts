@@ -65,7 +65,7 @@ export const POST = Webhooks({
           customer_id: customer.customer_id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          end_date: payload.data.endsAt,
+          end_date: payload.data.currentPeriodEnd,
         },
         { onConflict: "subscription_id" }
       );
